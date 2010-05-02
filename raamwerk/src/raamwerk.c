@@ -1,19 +1,23 @@
 #include "raamwerk.h"
 
-
-LRESULT CALLBACK WinProc( HWND, UINT, WPARAM, LPARAM );
-
-PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
+#ifdef _WIN32
+    LRESULT CALLBACK WinProc( HWND, UINT, WPARAM, LPARAM );
+    PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
+    PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
+    static HDC g_hdc = NULL;
+    static HGLRC g_hrc = NULL;
+    static HINSTANCE g_hinst = NULL;
+    static HWND g_hwnd = NULL;
+#else
+    static Window win;
+    static Display *dpy;
+    static XEvent event;
+#endif
 
 static void (*g_fpClose)() = NULL;
 static void (*g_fpInit)() = NULL;
 static void (*g_fpLoop)() = NULL;
 static void (*g_fpResize)() = NULL;
-static HDC g_hdc = NULL;
-static HGLRC g_hrc = NULL;
-static HINSTANCE g_hinst = NULL;
-static HWND g_hwnd = NULL;
 static ALCcontext *g_al_context;
 static raamwerk_t g_rw;
 
@@ -74,7 +78,12 @@ void rwDisable( int var )
     {
         case RW_VSYNC:
         {
-            wglSwapIntervalEXT( 0 );
+            //TODO linux vsync
+#ifdef _WIN32
+            if( wglSwapIntervalEXT ) {
+                wglSwapIntervalEXT( 0 );
+            }
+#endif
             break;
         }
     }
@@ -83,6 +92,7 @@ void rwDisable( int var )
 
 void rwDisplay( const char *title, int width, int height, int fullscreen, int colorbits, int alphabits, int depthbits, int stencilbits, int multisample )
 {
+#ifdef _WIN32
     if( fullscreen )
 	{
 		DEVMODE dm;
@@ -158,12 +168,11 @@ void rwDisplay( const char *title, int width, int height, int fullscreen, int co
     wglMakeCurrent( g_hdc, g_hrc );
 
 
-    // nu kunnen we pas de OpenGL extensties ophalen.
+    // now we can get some OpenGL extensties.
     wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress( "wglSwapIntervalEXT" );
     wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress( "wglChoosePixelFormatARB" );
 
 
-    // activeer multisampling
     if( multisample > 0 )
     {
         wglMakeCurrent( g_hdc, NULL );
@@ -209,6 +218,64 @@ void rwDisplay( const char *title, int width, int height, int fullscreen, int co
     SetForegroundWindow( g_hwnd );
 	SetFocus( g_hwnd );
 
+#else
+
+    int dbl_buf[] = { GLX_RGBA, GLX_DEPTH_SIZE, depthbits, GLX_DOUBLEBUFFER, None };
+
+    XVisualInfo *vi;
+    Colormap cmap;
+    XSetWindowAttributes swa;
+    GLXContext cx;
+    int dummy;
+
+
+    if( ( dpy = XOpenDisplay( NULL ) ) == NULL )
+    {
+        printf( "Could not open display\n" );
+        return;
+    }
+
+    if( !glXQueryExtension( dpy, &dummy, &dummy ) )
+    {
+        printf( "X server has no OpenGL GLX extension\n" );
+        return;
+    }
+
+    if( ( vi = glXChooseVisual( dpy, DefaultScreen( dpy ), dbl_buf ) ) == NULL )
+    {
+        printf( "No RGB visual with depth buffer\n" );
+        return;
+    }
+
+    if( vi->class != TrueColor )
+    {
+        printf( "TrueColor visual required for this program\n" );
+        return;
+    }
+
+    if( ( cx = glXCreateContext( dpy, vi, None, GL_TRUE ) ) == NULL )
+    {
+        printf( "Could not create rendering context\n" );
+        return;
+    }
+
+    cmap = XCreateColormap( dpy, RootWindow( dpy, vi->screen ), vi->visual, AllocNone );
+    swa.colormap = cmap;
+    swa.border_pixel = 0;
+    swa.event_mask = KeyPressMask | KeyReleaseMask | ExposureMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask;
+
+    win = XCreateWindow(
+        dpy, RootWindow( dpy, vi->screen ), 0, 0,
+        width, height, 0, vi->depth, InputOutput, vi->visual,
+        CWBorderPixel | CWColormap | CWEventMask, &swa
+    );
+
+    XSetStandardProperties( dpy, win, title, "main", None, NULL, 0, NULL );
+    glXMakeCurrent( dpy, win, cx );
+    XMapWindow( dpy, win );
+
+
+#endif
 
     g_rw.display.width = width;
     g_rw.display.height = height;
@@ -227,7 +294,13 @@ void rwEnable( int var )
     {
         case RW_VSYNC:
         {
-            wglSwapIntervalEXT( 1 );
+            //TODO linux vsync
+#ifdef _WIN32
+            if( wglSwapIntervalEXT ) {
+                wglSwapIntervalEXT( 1 );
+            }
+#endif
+
             break;
         }
     }
@@ -254,6 +327,7 @@ void rwResizeFunc( void (*fp)() )
 
 int rwRun()
 {
+#ifdef _WIN32
     g_hinst = GetModuleHandle( NULL );
 
     WNDCLASSEX wcex;
@@ -273,6 +347,7 @@ int rwRun()
     if( !RegisterClassEx( &wcex ) ) {
         return 0;
     }
+#endif
 
     // init g_rw struct
     memset( &g_rw, 0, sizeof( raamwerk_t ) );
@@ -285,13 +360,16 @@ int rwRun()
         g_fpResize();
     }
 
+    // if we got no display, then quit immideatly.
+    int quit = !g_rw.display.is_active;
+
+#ifdef _WIN32
     JOYINFOEX joy;
     memset( &joy, 0, sizeof( joy ) );
     joy.dwSize = sizeof( joy );
     joy.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY;
 
     MSG msg;
-    int quit = !g_rw.display.is_active;  // if we got no display, then quit.
 
     while( !quit )
     {
@@ -357,6 +435,107 @@ int rwRun()
         }
     }
 
+#else
+
+    //KeySym key;
+    int key;
+
+    while( !quit )
+    {
+        while( XPending( dpy ) > 0 )
+        {
+            XNextEvent( dpy, &event );
+
+            switch( event.type )
+            {
+                case ButtonPress:
+                {
+                    g_rw.kb.down[event.xbutton.button] = RW_TRUE;
+                    break;
+                }
+
+                case ButtonRelease:
+                {
+                    g_rw.kb.down[event.xbutton.button] = RW_FALSE;
+                    break;
+                }
+
+                case ClientMessage:
+                {
+                    if( *XGetAtomName( dpy, event.xclient.message_type) == *"WM_PROTOCOLS" )
+                    {
+                        printf( "Exiting sanely...\n" );
+                        quit = 1;
+                    }
+                    break;
+                }
+
+                case ConfigureNotify:
+                {
+                    glViewport( 0, 0, event.xconfigure.width, event.xconfigure.height );
+                    break;
+                }
+
+                case Expose:
+                {
+                    if( event.xexpose.count != 0 ) {
+                        break;
+                    }
+
+                    //drawGLScene();
+                    break;
+                }
+
+                case KeyPress:
+                {
+                    key = XLookupKeysym( &event.xkey, 0 );
+
+                    if( key < RW_KB_TOTAL_BUTTONS ) {
+                        g_rw.kb.down[key] = RW_TRUE;
+                    }
+
+                    break;
+                }
+
+                case KeyRelease:
+                {
+                    key = XLookupKeysym( &event.xkey, 0 );
+
+                    if( key < RW_KB_TOTAL_BUTTONS ) {
+                        g_rw.kb.down[key] = RW_FALSE;
+                    }
+
+                    break;
+                }
+
+                case MotionNotify:
+                {
+                    g_rw.mouse.x = event.xmotion.x;
+                    g_rw.mouse.y = event.xmotion.y;
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
+            }
+        }
+
+        // TODO joypad
+        g_rw.joy.x = 32786;
+        g_rw.joy.y = 32786;
+
+         // program loop
+        if( g_fpLoop ) {
+            g_fpLoop();
+        }
+
+        glXSwapBuffers( dpy, win );
+    }
+
+#endif
+
     if( g_fpClose ) {
         g_fpClose();
     }
@@ -368,6 +547,8 @@ int rwRun()
         alcCloseDevice( dev );
     }
 
+#ifdef _WIN32
+
     if( g_rw.display.is_active )
     {
         wglMakeCurrent( NULL, NULL );
@@ -377,6 +558,12 @@ int rwRun()
     }
 
     return msg.wParam;
+
+#else
+
+    return 0;
+
+#endif
 }
 
 
@@ -385,7 +572,7 @@ raamwerk_t *rwStat()
     return &g_rw;
 }
 
-
+#ifdef _WIN32
 LRESULT CALLBACK WinProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
     switch( msg )
@@ -486,3 +673,4 @@ LRESULT CALLBACK WinProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 
     return 0;
 }
+#endif

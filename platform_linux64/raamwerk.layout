@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="../myapp/inc/myapp.h" open="0" top="0" tabpos="4">
+		<Cursor position="78" topLine="0" />
+	</File>
+	<File name="../myapp/src/myapp.c" open="0" top="0" tabpos="5">
+		<Cursor position="438" topLine="69" />
+	</File>
+	<File name="main.c" open="1" top="0" tabpos="1">
+		<Cursor position="207" topLine="0" />
+	</File>
+	<File name="../raamwerk/inc/raamwerk.h" open="1" top="0" tabpos="3">
+		<Cursor position="127" topLine="0" />
+	</File>
+	<File name="../raamwerk/src/raamwerk.c" open="1" top="1" tabpos="2">
+		<Cursor position="5714" topLine="216" />
+	</File>
+</CodeBlocks_layout_file>

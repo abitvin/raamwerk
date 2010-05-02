@@ -1,0 +1,96 @@
+# depslib dependency file v1.0
+1272806190 source:z:\work\vincent\development\raamwerk\raamwerk\src\raamwerk.c
+	"raamwerk.h"
+
+1272806190 h"
+
+1272723911 source:z:\work\vincent\development\raamwerk\platform_win32\main.c
+	<windows.h>
+	<raamwerk.h>
+	<myapp.h>
+
+1147436956 
+
+1272806167 z:\work\vincent\development\raamwerk\raamwerk\inc\\raamwerk.h
+	<windows.h>
+	<al/al.h>
+	<al/alc.h>
+	<gl/gl.h>
+	<gl/glext.h>
+	<gl/wglext.h>
+
+1272806167 .h>
+
+1272795755 z:\work\vincent\development\raamwerk\myapp\inc\\myapp.h
+	<raamwerk.h>
+	<math.h>
+
+1272806374 source:z:\work\vincent\development\raamwerk\myapp\src\myapp.c
+	"myapp.h"
+
+1269009183 z:\work\vincent\development\raamwerk\opengl\inc\\gl\glext.h
+	<windows.h>
+	<stddef.h>
+	<inttypes.h>
+	<inttypes.h>
+	<inttypes.h>
+	<stdint.h>
+	<stdint.h>
+	<inttypes.h>
+
+1269009183 h>
+
+1272012894 z:\work\vincent\development\raamwerk\opengl\inc\\gl\wglext.h
+	<windows.h>
+
+1272012894 >
+
+1165591858 z:\work\vincent\development\raamwerk\openal\inc\\al\al.h
+
+1147436956 z:\work\vincent\development\raamwerk\alut\inc\\al\alut.h
+	<alc.h>
+	<al.h>
+	<OpenAL/alc.h>
+	<OpenAL/al.h>
+	<AL/al.h>
+	<AL/alc.h>
+
+1176472968 z:\work\vincent\development\raamwerk\openal\inc\\al\alc.h
+
+1272808777 source:/home/vin777/work/vincent/development/raamwerk/myapp/src/myapp.c
+	"myapp.h"
+
+1272795755 /home/vin777/work/vincent/development/raamwerk/myapp/inc//myapp.h
+	<raamwerk.h>
+	<math.h>
+
+1272841791 /home/vin777/work/vincent/development/raamwerk/raamwerk/inc//raamwerk.h
+	<AL/al.h>
+	<AL/alc.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	<windows.h>
+	<gl/wglext.h>
+	<stdio.h>
+	<string.h>
+	<X11/X.h>
+	<X11/keysym.h>
+	<GL/glx.h>
+
+1269005583 /home/vin777/work/vincent/development/raamwerk/opengl/inc//GL/glext.h
+	<windows.h>
+	<stddef.h>
+	<inttypes.h>
+	<inttypes.h>
+	<inttypes.h>
+	<stdint.h>
+	<stdint.h>
+	<inttypes.h>
+
+1272839944 source:/home/vin777/work/vincent/development/raamwerk/platform_linux64/main.c
+	<raamwerk.h>
+	<myapp.h>
+
+1272843620 source:/home/vin777/work/vincent/development/raamwerk/raamwerk/src/raamwerk.c
+	"raamwerk.h"
+

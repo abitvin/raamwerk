@@ -3,12 +3,21 @@
 
 
 
-#include <windows.h>
-#include <al/al.h>
-#include <al/alc.h>
-#include <gl/gl.h>
-#include <gl/glext.h>
-#include <gl/wglext.h>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
+
+#ifdef _WIN32
+    #include <windows.h>
+    #include <gl/wglext.h>
+#else
+    #include <stdio.h>
+    #include <string.h>
+    #include <X11/X.h>
+    #include <X11/keysym.h>
+    #include <GL/glx.h>
+#endif
 
 
 
@@ -65,6 +74,10 @@ typedef struct raamwerk_t {
 
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 void rwAudio();
 void rwCloseFunc( void (*fp)() );
 void rwDisable( int var );
@@ -75,6 +88,10 @@ void rwLoopFunc( void (*fp)() );
 void rwResizeFunc( void (*fp)() );
 int rwRun();
 raamwerk_t *rwStat();
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 
