@@ -1,0 +1,30 @@
+API
+===
+
+close()
+{
+	
+}
+
+init( argc, argv )
+{
+	rwAudio();
+	rwDisplay( w, h, d, fs );
+	rmEnable( RW_VSYNC );
+}
+
+loop()
+{
+	raamwerk_t *rm = rwStat();
+	
+	
+}
+
+main()
+{
+	rwInitFunc( &init );
+	rwLoopFunc( &loop );
+	rwCloseFunc( &close );
+	return rwRun();
+}
+

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Release" />
+	<File name="..\myapp\inc\myapp.h" open="1" top="0" tabpos="4">
+		<Cursor position="139" topLine="0" />
+	</File>
+	<File name="..\myapp\src\myapp.c" open="1" top="1" tabpos="5">
+		<Cursor position="1160" topLine="0" />
+	</File>
+	<File name="main.c" open="1" top="0" tabpos="1">
+		<Cursor position="20" topLine="0" />
+	</File>
+	<File name="..\raamwerk\inc\raamwerk.h" open="1" top="0" tabpos="2">
+		<Cursor position="311" topLine="3" />
+	</File>
+	<File name="..\raamwerk\src\raamwerk.c" open="1" top="0" tabpos="3">
+		<Cursor position="9585" topLine="219" />
+	</File>
+</CodeBlocks_layout_file>
