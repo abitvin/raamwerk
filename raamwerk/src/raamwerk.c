@@ -173,7 +173,7 @@ void rwDisplay( const char *title, int width, int height, int fullscreen, int co
     wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress( "wglChoosePixelFormatARB" );
 
 
-    if( multisample > 0 )
+    if( multisample > 0 && wglChoosePixelFormatARB )
     {
         wglMakeCurrent( g_hdc, NULL );
         wglDeleteContext( g_hrc );
@@ -273,7 +273,6 @@ void rwDisplay( const char *title, int width, int height, int fullscreen, int co
     XSetStandardProperties( dpy, win, title, "main", None, NULL, 0, NULL );
     glXMakeCurrent( dpy, win, cx );
     XMapWindow( dpy, win );
-
 
 #endif
 

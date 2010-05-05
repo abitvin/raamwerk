@@ -34,16 +34,14 @@
 			<Add directory="..\raamwerk\inc\" />
 			<Add directory="..\myapp\inc\" />
 			<Add directory="..\openal\inc\" />
-			<Add directory="..\alut\inc\" />
 		</Compiler>
 		<Linker>
 			<Add library="opengl32" />
 			<Add library="glu32" />
 			<Add library="gdi32" />
 			<Add library="openal32.dll" />
-			<Add library="alut.dll" />
+			<Add library="winmm" />
 			<Add directory="..\openal\lib\win32\" />
-			<Add directory="..\alut\lib\win32\" />
 		</Linker>
 		<Unit filename="..\myapp\inc\myapp.h" />
 		<Unit filename="..\myapp\src\myapp.c">

@@ -16,6 +16,7 @@ void close()
 
 void init( int argc, char **argv )
 {
+    // init Raamwerk
     rwAudio();
 	rwDisplay( "My beautiful app!", 640, 480, RW_FALSE, 24, 8, RW_NULL, RW_NULL, 4 );
 	rwEnable( RW_VSYNC );
@@ -40,7 +41,6 @@ void init( int argc, char **argv )
     //glEnable( GL_TEXTURE_2D );
     //glEnable( GL_BLEND );
     //glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
 
 
     // init OpenAL
