@@ -1,6 +1,7 @@
 #include "raamwerk.h"
 
-#ifdef _WIN32
+
+#ifdef RW_WINDOWS
     LRESULT CALLBACK WinProc( HWND, UINT, WPARAM, LPARAM );
     PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
     PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
@@ -8,18 +9,113 @@
     static HGLRC g_hrc = NULL;
     static HINSTANCE g_hinst = NULL;
     static HWND g_hwnd = NULL;
-#else
+#elif RW_LINUX
     static Window win;
     static Display *dpy;
     static XEvent event;
 #endif
 
-static void (*g_fpClose)() = NULL;
-static void (*g_fpInit)() = NULL;
-static void (*g_fpLoop)() = NULL;
-static void (*g_fpResize)() = NULL;
+
+static void (*g_fp_destroy)() = NULL;
+static void (*g_fp_init)() = NULL;
+static void (*g_fp_loop)() = NULL;
+static void (*g_fp_resize)() = NULL;
 static ALCcontext *g_al_context;
 static raamwerk_t g_rw;
+
+
+static void init()
+{
+	memset( &g_rw, 0, sizeof( raamwerk_t ) );
+
+    g_rw.joy.x = 32786;
+	g_rw.joy.y = 32786;
+	g_rw.is_active = RW_TRUE;
+}
+
+
+static void updateInput()
+{
+	int i, j, x, y;
+
+	// keyboard
+	for( i = 0; i < RW_KB_TOTAL_BUTTONS; i++ )
+	{
+		g_rw.kb.pressed[i] = g_rw.kb.down[i] == RW_TRUE && g_rw.kb.last[i] == RW_FALSE;
+		g_rw.kb.released[i] = g_rw.kb.down[i] == RW_FALSE && g_rw.kb.last[i] == RW_TRUE;
+		g_rw.kb.last[i] = g_rw.kb.down[i];
+	}
+
+	// mouse
+	for( i = 0; i < RW_MOUSE_TOTAL_BUTTONS; i++ )
+	{
+		g_rw.mouse.pressed[i] = g_rw.mouse.down[i] == RW_TRUE && g_rw.mouse.last[i] == RW_FALSE;
+		g_rw.mouse.released[i] = g_rw.mouse.down[i] == RW_FALSE && g_rw.mouse.last[i] == RW_TRUE;
+		g_rw.mouse.last[i] = g_rw.mouse.down[i];
+	}
+
+	// hitarea's
+	for( i = 0; i < RW_HIT_TOTAL_AREAS; i++ )
+	{
+		g_rw.hit.area[i].down = RW_FALSE;
+
+		// mouse
+		/*x = g_rw.mouse.x;
+		y = g_rw.mouse.y;
+
+		if( g_rw.mouse.down[0] &&
+		    x >= g_rw.hit.area[i].x && x < g_rw.hit.area[i].x + g_rw.hit.area[i].width &&
+		    y >= g_rw.hit.area[i].y && y < g_rw.hit.area[i].y + g_rw.hit.area[i].height )
+		{
+			g_rw.hit.area[i].down = RW_TRUE;
+		}*/
+
+		// touches
+		for( j = 0; j < g_rw.touch.num_touches; j++ )
+		{
+			x = g_rw.touch.point[j].x;
+			y = g_rw.touch.point[j].y;
+
+			if( x >= g_rw.hit.area[i].x && x < g_rw.hit.area[i].x + g_rw.hit.area[i].width &&
+			    y >= g_rw.hit.area[i].y && y < g_rw.hit.area[i].y + g_rw.hit.area[i].height )
+			{
+				g_rw.hit.area[i].down = RW_TRUE;
+				break;
+			}
+		}
+
+		g_rw.hit.area[i].pressed = g_rw.hit.area[i].down == RW_TRUE && g_rw.hit.area[i].last == RW_FALSE;
+		g_rw.hit.area[i].released = g_rw.hit.area[i].down == RW_FALSE && g_rw.hit.area[i].last == RW_TRUE;
+		g_rw.hit.area[i].last = g_rw.hit.area[i].down;
+	}
+
+	// joypad/gamepad
+#ifdef RW_WINDOWS
+	JOYINFOEX joy;
+    memset( &joy, 0, sizeof( joy ) );
+    joy.dwSize = sizeof( joy );
+    joy.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY;
+
+	if( joyGetPosEx( JOYSTICKID1, &joy ) == JOYERR_NOERROR )
+	{
+		g_rw.joy.x = joy.dwXpos;
+		g_rw.joy.y = joy.dwYpos;
+
+		for( i = 0; i < RW_JOY_TOTAL_BUTTONS; i++ )
+		{
+			g_rw.joy.down[i] = ( joy.dwButtons & ( 1 << i ) ) != 0;
+			g_rw.joy.pressed[i] = g_rw.joy.down[i] == RW_TRUE && g_rw.joy.last[i] == RW_FALSE;
+			g_rw.joy.released[i] = g_rw.joy.down[i] == RW_FALSE && g_rw.joy.last[i] == RW_TRUE;
+			g_rw.joy.last[i] = g_rw.joy.down[i];
+		}
+	}
+	else
+	{
+		g_rw.joy.x = 32768;
+		g_rw.joy.y = 32768;
+	}
+#endif
+}
 
 
 void rwAudio()
@@ -66,9 +162,17 @@ void rwAudio()
 }
 
 
-void rwCloseFunc( void (*fp)() )
+void rwDestroy()
 {
-    g_fpClose = fp;
+	if( g_fp_destroy ) {
+		g_fp_destroy();
+	}
+}
+
+
+void rwDestroyFunc( void (*fp)() )
+{
+    g_fp_destroy = fp;
 }
 
 
@@ -78,8 +182,8 @@ void rwDisable( int var )
     {
         case RW_VSYNC:
         {
-            //TODO linux vsync
-#ifdef _WIN32
+            //TODO linux, mac vsync
+#ifdef RW_WINDOWS
             if( wglSwapIntervalEXT ) {
                 wglSwapIntervalEXT( 0 );
             }
@@ -218,7 +322,7 @@ void rwDisplay( const char *title, int width, int height, int fullscreen, int co
     SetForegroundWindow( g_hwnd );
 	SetFocus( g_hwnd );
 
-#else
+#elif RW_LINUX
 
     int dbl_buf[] = { GLX_RGBA, GLX_DEPTH_SIZE, depthbits, GLX_DOUBLEBUFFER, None };
 
@@ -293,8 +397,8 @@ void rwEnable( int var )
     {
         case RW_VSYNC:
         {
-            //TODO linux vsync
-#ifdef _WIN32
+            //TODO linux, mac vsync
+#ifdef RW_WINDOWS
             if( wglSwapIntervalEXT ) {
                 wglSwapIntervalEXT( 1 );
             }
@@ -306,27 +410,69 @@ void rwEnable( int var )
 }
 
 
+void rwInit()
+{
+	if( g_fp_init ) {
+		g_fp_init();
+	}
+}
+
+
 void rwInitFunc( void (*fp)( int argc, char **argv ) )
 {
-    g_fpInit = fp;
+    g_fp_init = fp;
+}
+
+
+void rwLoop()
+{
+	updateInput();
+
+	if( g_fp_loop ) {
+		g_fp_loop();
+	}
 }
 
 
 void rwLoopFunc( void (*fp)() )
 {
-    g_fpLoop = fp;
+    g_fp_loop = fp;
+}
+
+
+void rwResize()
+{
+	if( g_fp_resize ) {
+		g_fp_resize();
+	}
 }
 
 
 void rwResizeFunc( void (*fp)() )
 {
-    g_fpResize = fp;
+    g_fp_resize = fp;
 }
 
 
 int rwRun()
 {
-#ifdef _WIN32
+	// init Raamwerk
+	init();
+
+
+#ifdef RW_IPHONE
+
+
+	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    //FIXME int ret = UIApplicationMain( argc, argv, nil, @"AppDelegate" );
+    int ret = UIApplicationMain( 0, nil, nil, @"AppDelegate" );
+	[pool release];
+	return ret;
+
+
+#elif RW_WINDOWS
+
+
     g_hinst = GetModuleHandle( NULL );
 
     WNDCLASSEX wcex;
@@ -346,27 +492,12 @@ int rwRun()
     if( !RegisterClassEx( &wcex ) ) {
         return 0;
     }
-#endif
 
-    // init g_rw struct
-    memset( &g_rw, 0, sizeof( raamwerk_t ) );
-
-    if( g_fpInit ) {
-        g_fpInit();
-    }
-
-    if( g_fpResize ) {
-        g_fpResize();
-    }
+    rwInit();
+	rwResize();
 
     // if we got no display, then quit immideatly.
     int quit = !g_rw.display.is_active;
-
-#ifdef _WIN32
-    JOYINFOEX joy;
-    memset( &joy, 0, sizeof( joy ) );
-    joy.dwSize = sizeof( joy );
-    joy.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNX | JOY_RETURNY;
 
     MSG msg;
 
@@ -386,55 +517,41 @@ int rwRun()
         }
         else
         {
-            int i;
-
-            // keyboard
-            for( i = 0; i < RW_KB_TOTAL_BUTTONS; i++ )
-            {
-                g_rw.kb.pressed[i] = g_rw.kb.down[i] == RW_TRUE && g_rw.kb.last[i] == RW_FALSE;
-                g_rw.kb.released[i] = g_rw.kb.down[i] == RW_FALSE && g_rw.kb.last[i] == RW_TRUE;
-                g_rw.kb.last[i] = g_rw.kb.down[i];
-            }
-
-            // mouse
-            for( i = 0; i < RW_MOUSE_TOTAL_BUTTONS; i++ )
-            {
-                g_rw.mouse.pressed[i] = g_rw.mouse.down[i] == RW_TRUE && g_rw.mouse.last[i] == RW_FALSE;
-                g_rw.mouse.released[i] = g_rw.mouse.down[i] == RW_FALSE && g_rw.mouse.last[i] == RW_TRUE;
-                g_rw.mouse.last[i] = g_rw.mouse.down[i];
-            }
-
-            // joypad/joypad
-            if( joyGetPosEx( JOYSTICKID1, &joy ) == JOYERR_NOERROR )
-            {
-                g_rw.joy.x = joy.dwXpos;
-                g_rw.joy.y = joy.dwYpos;
-
-                for( i = 0; i < RW_JOY_TOTAL_BUTTONS; i++ )
-                {
-                    g_rw.joy.down[i] = ( joy.dwButtons & ( 1 << i ) ) != 0;
-                    g_rw.joy.pressed[i] = g_rw.joy.down[i] == RW_TRUE && g_rw.joy.last[i] == RW_FALSE;
-                    g_rw.joy.released[i] = g_rw.joy.down[i] == RW_FALSE && g_rw.joy.last[i] == RW_TRUE;
-                    g_rw.joy.last[i] = g_rw.joy.down[i];
-                }
-            }
-            else
-            {
-                g_rw.joy.x = 32768;
-                g_rw.joy.y = 32768;
-            }
-
-            // program loop
-            if( g_fpLoop ) {
-                g_fpLoop();
-            }
+            rwLoop();
 
             // swap buffer
             SwapBuffers( g_hdc );
         }
     }
 
-#else
+    rwDestroy();
+
+    if( g_rw.sound.is_active )
+    {
+        ALCdevice *dev = alcGetContextsDevice( g_al_context );
+        alcDestroyContext( g_al_context );
+        alcCloseDevice( dev );
+    }
+
+    if( g_rw.display.is_active )
+    {
+        wglMakeCurrent( NULL, NULL );
+        wglDeleteContext( g_hrc );
+        ReleaseDC( g_hwnd, g_hdc );
+        DestroyWindow( g_hwnd );
+    }
+
+    return msg.wParam;
+
+
+#elif RW_LINUX
+
+
+    rwInit();
+	rwResize();
+
+	// if we got no display, then quit immideatly.
+    int quit = !g_rw.display.is_active;
 
     //KeySym key;
     int key;
@@ -521,23 +638,12 @@ int rwRun()
             }
         }
 
-        // TODO joypad
-        g_rw.joy.x = 32786;
-        g_rw.joy.y = 32786;
+		rwLoop();
 
-         // program loop
-        if( g_fpLoop ) {
-            g_fpLoop();
-        }
-
-        glXSwapBuffers( dpy, win );
+		glXSwapBuffers( dpy, win );
     }
 
-#endif
-
-    if( g_fpClose ) {
-        g_fpClose();
-    }
+    rwClose();
 
     if( g_rw.sound.is_active )
     {
@@ -545,20 +651,6 @@ int rwRun()
         alcDestroyContext( g_al_context );
         alcCloseDevice( dev );
     }
-
-#ifdef _WIN32
-
-    if( g_rw.display.is_active )
-    {
-        wglMakeCurrent( NULL, NULL );
-        wglDeleteContext( g_hrc );
-        ReleaseDC( g_hwnd, g_hdc );
-        DestroyWindow( g_hwnd );
-    }
-
-    return msg.wParam;
-
-#else
 
     return 0;
 
@@ -571,7 +663,8 @@ raamwerk_t *rwStat()
     return &g_rw;
 }
 
-#ifdef _WIN32
+
+#ifdef RW_WINDOWS
 LRESULT CALLBACK WinProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
     switch( msg )
@@ -658,8 +751,8 @@ LRESULT CALLBACK WinProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
             g_rw.display.width = LOWORD( lparam );
             g_rw.display.height = HIWORD( lparam );
 
-            if( g_fpResize ) {
-                g_fpResize();
+            if( g_fp_resize ) {
+                g_fp_resize();
             }
 
             break;
