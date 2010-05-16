@@ -6,7 +6,7 @@
 #include <math.h>
 
 
-void close();
+void destroy();
 void init( int argc, char **argv );
 void loop();
 void resize();
