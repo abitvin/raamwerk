@@ -4,16 +4,16 @@
 	<File name="..\myapp\inc\myapp.h" open="0" top="0" tabpos="4">
 		<Cursor position="78" topLine="0" />
 	</File>
-	<File name="..\myapp\src\myapp.c" open="1" top="1" tabpos="1">
-		<Cursor position="22" topLine="0" />
+	<File name="..\myapp\src\myapp.c" open="1" top="1" tabpos="2">
+		<Cursor position="87" topLine="0" />
 	</File>
-	<File name="main.c" open="0" top="0" tabpos="1">
-		<Cursor position="292" topLine="0" />
+	<File name="main.c" open="1" top="0" tabpos="1">
+		<Cursor position="179" topLine="0" />
 	</File>
-	<File name="..\raamwerk\inc\raamwerk.h" open="0" top="0" tabpos="2">
-		<Cursor position="437" topLine="6" />
+	<File name="..\raamwerk\inc\raamwerk.h" open="0" top="0" tabpos="4">
+		<Cursor position="2483" topLine="84" />
 	</File>
 	<File name="..\raamwerk\src\raamwerk.c" open="0" top="0" tabpos="3">
-		<Cursor position="7249" topLine="610" />
+		<Cursor position="14872" topLine="550" />
 	</File>
 </CodeBlocks_layout_file>

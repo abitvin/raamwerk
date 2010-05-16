@@ -5,7 +5,7 @@
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 {
-    rwCloseFunc( &close );
+    rwDestroyFunc( &destroy );
     rwInitFunc( &init );
 	rwLoopFunc( &loop );
 	rwResizeFunc( &resize );

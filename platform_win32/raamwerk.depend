@@ -47,3 +47,53 @@
 
 1176472968 z:\work\vincent\development\raamwerk\openal\inc\\al\alc.h
 
+1274032442 source:c:\users\vin777\documents\work\raamwerk\platform_win32\main.c
+	<windows.h>
+	<raamwerk.h>
+	<myapp.h>
+
+1274032423 c:\users\vin777\documents\work\raamwerk\raamwerk\inc\\raamwerk.h
+	<AL/al.h>
+	<AL/alc.h>
+	<GL/gl.h>
+	<GL/glext.h>
+	<windows.h>
+	<gl/wglext.h>
+	"TargetConditionals.h"
+	<AL/al.h>
+	<AL/alc.h>
+	<GL/gl.h>
+	<GL/glx.h>
+	<GL/glext.h>
+	<stdio.h>
+	<string.h>
+	<X11/X.h>
+	<X11/keysym.h>
+
+1165591858 c:\users\vin777\documents\work\raamwerk\openal\inc\\al\al.h
+
+1176472968 c:\users\vin777\documents\work\raamwerk\openal\inc\\al\alc.h
+
+1269009183 c:\users\vin777\documents\work\raamwerk\opengl\inc\\gl\glext.h
+	<windows.h>
+	<stddef.h>
+	<inttypes.h>
+	<inttypes.h>
+	<inttypes.h>
+	<stdint.h>
+	<stdint.h>
+	<inttypes.h>
+
+1272012894 c:\users\vin777\documents\work\raamwerk\opengl\inc\\gl\wglext.h
+	<windows.h>
+
+1273328633 c:\users\vin777\documents\work\raamwerk\myapp\inc\\myapp.h
+	<raamwerk.h>
+	<math.h>
+
+1274027637 source:c:\users\vin777\documents\work\raamwerk\myapp\src\myapp.c
+	"myapp.h"
+
+1274032442 source:c:\users\vin777\documents\work\raamwerk\raamwerk\src\raamwerk.c
+	"raamwerk.h"
+
