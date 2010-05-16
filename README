@@ -3,16 +3,29 @@ WORK-IN-PROGRESS!!!
 I'm still working on this. I don't have a roadmap for it eather. I use it in my own programs and add features where I see fit. That doesn't mean you can't use it! Or if you don't use it, you can learn from it. Hey! When you encounter a bug let me know ok? Happy coding!
 
 
+
+RAAMWERK
+
+
 About
-=====
+-----
 Raamwerk is more like a "starting point" for your application then a full-blow library. I created Raamwerk because most of the time I reuse 90% of the startup code. Like initializing a OpenGL window, setup OpenAL, etc. And that's what Raamwerk does. Initialize a OpenGL window, OpenAL and some routines to check for key presses. The goal is to make it cross-platform. As of this writing Windows and iPhone are supported and partially but not fully tested, Linux. Support for the Mac should be pretty easy to implement because it's simular as the iPhone. 
 
 
 Why not SDL, GLUT or ...?
-=========================
+-------------------------
 I've got nothing against these library's. It's a matter of personal interest. The answer is pretty simple. I like to know what's under the hood and change the bits and pieces to my own creation. Most of the existing frameworks's are build with additional features like network support and drawing routines. That's not the purpose of Raamwerk. See Raamwerk as an application template. 
 
 
 Documentation
-=============
+-------------
 Sorry, it's still in an early stage. You should see the 'myapp' sources for an example program. For now, I don't think there will be any documentation soon.
+
+
+Contact
+-------
+You liked my code? Cool! Leave me a message, I like messages :)
+
+Twitter: http://twitter.com/abitvin
+Github: http://github.com/abitvin
+Blog: http://vin.ingine.nl
